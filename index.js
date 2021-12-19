@@ -1,28 +1,10 @@
+require('dotenv').config()
 const express = require('express')
 const mongoose = require('mongoose')
 const app = express()
+const Note = require('./models/note')
 
 app.use(express.json())
-
-const url = `mongodb+srv://fullstack:test123@cluster0.mdhmr.mongodb.net/note-app?retryWrites=true&w=majority`
-
-mongoose.connect(url)
-
-const noteSchema = new mongoose.Schema({
-    content: String,
-    date: Date,
-    important: Boolean,
-})
-
-const Note = mongoose.model('Note', noteSchema)
-
-noteSchema.set('toJSON', {
-  transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString()
-    delete returnedObject._id
-    delete returnedObject.__v
-  }
-})
 
 // let notes = [
 //   {
@@ -55,12 +37,12 @@ app.get('/api/notes', (req, res) => {
   })
 })
 
-const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => n.id))
-    : 0
-  return maxId + 1
-}
+// const generateId = () => {
+//   const maxId = notes.length > 0
+//     ? Math.max(...notes.map(n => n.id))
+//     : 0
+//   return maxId + 1
+// }
 
 app.post('/api/notes', (request, response) => {
   const body = request.body
@@ -71,27 +53,33 @@ app.post('/api/notes', (request, response) => {
     })
   }
 
-  const note = {
+  const note = new Note({
     content: body.content,
     important: body.important || false,
     date: new Date(),
-    id: generateId(),
-  }
+  })
 
-  notes = notes.concat(note)
+  // notes = notes.concat(note)
+  note.save().then(savedNote => {
+    response.json(savedNote)
+  })
 
   response.json(note)
 })
 
 app.get('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const note = notes.find(note => note.id === id)
+  // const id = Number(request.params.id)
+  // const note = notes.find(note => note.id === id)
 
-  if (note) {
+  // if (note) {
+  //   response.json(note)
+  // } else {
+  //   response.status(404).end()
+  // }
+
+  Note.findById(request.params.id).then(note => {
     response.json(note)
-  } else {
-    response.status(404).end()
-  }
+  })
 })
 
 app.delete('/api/notes/:id', (request, response) => {
