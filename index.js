@@ -4,7 +4,7 @@ const app = express()
 
 app.use(express.json())
 
-const url = `mongodb+srv://fullstack:${password}@cluster0.mdhmr.mongodb.net/note-app?retryWrites=true&w=majority`
+const url = `mongodb+srv://fullstack:test123@cluster0.mdhmr.mongodb.net/note-app?retryWrites=true&w=majority`
 
 mongoose.connect(url)
 
