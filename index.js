@@ -6,6 +6,8 @@ const Note = require('./models/note')
 
 app.use(express.json())
 
+app.use(express.static('build'))
+
 // let notes = [
 //   {
 //     id: 1,
