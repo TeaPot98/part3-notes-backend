@@ -4,9 +4,9 @@ const mongoose = require('mongoose')
 const app = express()
 const Note = require('./models/note')
 
+app.use(express.static('build'))
 app.use(express.json())
 
-app.use(express.static('build'))
 
 // let notes = [
 //   {
@@ -69,7 +69,7 @@ app.post('/api/notes', (request, response) => {
   response.json(note)
 })
 
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
   // const id = Number(request.params.id)
   // const note = notes.find(note => note.id === id)
 
@@ -79,19 +79,43 @@ app.get('/api/notes/:id', (request, response) => {
   //   response.status(404).end()
   // }
 
-  Note.findById(request.params.id).then(note => {
-    response.json(note)
-  })
+  Note.findById(request.params.id)
+    .then(note => {
+      if (note) {
+        response.json(note)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 app.delete('/api/notes/:id', (request, response) => {
-  const id = Number(request.params.id)
-  notes = notes.filter(note => note.id !== id)
+  // const id = Number(request.params.id)
+  // notes = notes.filter(note => note.id !== id)
+  
+  // response.status(204).end()
 
-  response.status(204).end()
+  Note.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+const errorHandler = (error, request, response, next) => {
+  console.error(erro.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id'})
+  }
+
+  next(error)
+}
+
+app.use(errorHandler)
